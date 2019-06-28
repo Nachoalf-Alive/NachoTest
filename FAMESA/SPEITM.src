@@ -1,0 +1,156 @@
+#<AdxTL>@(#)0.0.0.0 $Revision$ Artículos
+$ACTION
+    Case ACTION
+      When "OUVRE"     : Gosub OUVRE
+      When "INICRE"    : Gosub INICRE
+      When "APRES_CRE" : Gosub APRES_CRE
+      When "APRES_MOD" : Gosub APRES_MOD
+      When "STYLE"     : Gosub STYLE
+
+      When "LIENS"     : Gosub LIENS
+      When "CREATION"  : Gosub CREATION
+      When "MODIF"     : Gosub MODIF
+      When "ANNULE"    : Gosub ANNULE
+    Endcase
+    # COMENTADO POR JM ESTO YA ESTA EN LOS PUNTOS DE ENTRADA DE OBJETO
+    # Gosub ACTION From YSPEITM
+Return
+
+#------------------------------------------------------------------------------#
+
+$OUVRE
+  If clalev([F:YITMD])=0 : Local File YITMDSLANDES [YITMD] : Endif
+Return
+
+#------------------------------------------------------------------------------#
+
+$INICRE
+  # CREAR EL CAMPO DE ARTÍCULO SIN COLOR
+  If instr(0,[F:ITM]ITMREF,'.') > 0 Then
+    [F:ITM]ZITMREFSC = left$([F:ITM]ITMREF,instr(0,[F:ITM]ITMREF,'.')-1)
+  Else
+    [F:ITM]ZITMREFSC = [F:ITM]ITMREF
+  Endif
+
+  [M:ITM0]ZITMREFSC = [F:ITM]ZITMREFSC
+  Affzo [M:ITM0]ZITMREFSC
+Return
+
+#------------------------------------------------------------------------------#
+
+$APRES_CRE
+  Read [F:ZSC]ZSC0 = [F:ITM]ZITMREFSC
+  If fstat <> 0 Then
+    # NO ENCONTRADO SE DEBE DE CREAR
+    Trbegin [F:ZSC]
+    Raz [F:ZSC]
+    [F:ZSC]ZITMREFSC = [F:ITM]ZITMREFSC
+    If [M:ITM0]ZDESCRIP <> '' Then
+      [F:ZSC]ZDESCRIP = [M:ITM0]ZDESCRIP
+    Else
+      [F:ZSC]ZDESCRIP = [F:ITM]ITMDES1
+    Endif
+    Write [F:ZSC]
+    Commit
+  Endif
+Return
+
+#------------------------------------------------------------------------------#
+
+$APRES_MOD
+  # SI ENCUENTRO EL ARTÍCULO COLOR MODIFICA LA DESCRIPCION DE PANTALLA
+  Read [F:ZSC]ZSC0 = [F:ITM]ZITMREFSC
+  If fstat = 0 Then
+    Trbegin [F:ZSC]
+    [F:ZSC]ZDESCRIP = [M:ITM0]ZDESCRIP
+    Rewrite [F:ZSC]
+    Commit
+  Endif
+Return
+
+#------------------------------------------------------------------------------#
+
+$STYLE
+  # SI ENCUENTRO EL ARTÍCULO COLOR MODIFICA LA DESCRIPCION DE PANTALLA
+  Read [F:ZSC]ZSC0 = [F:ITM]ZITMREFSC
+  If fstat = 0 Then
+    [M:ITM0]ZDESCRIP = [F:ZSC]ZDESCRIP
+    Affzo [M:ITM0]ZDESCRIP
+  Endif
+Return
+
+#------------------------------------------------------------------------------#
+
+$LIENS
+  Gosub LIENS_YITMD
+Return
+
+#------------------------------------------------------------------------------#
+
+$CREATION
+  Gosub CREATION_YITMD
+Return
+
+#------------------------------------------------------------------------------#
+
+$MODIF
+  Gosub ANNULE_YITMD
+  If GOK<1 : Return : Endif
+  Gosub CREATION_YITMD
+Return
+
+#------------------------------------------------------------------------------#
+
+$ANNULE
+  Gosub ANNULE_YITMD
+Return
+
+#------------------------------------------------------------------------------#
+
+$LIENS_YITMD
+  Raz [M:YITMF]
+  nolign = 0
+  For [F:YITMD]YITMD0 Where ITMREF=[M:ITM0]ITMREF
+    If nolign>=dim([M:YITMF]LAN)
+      Call ERREUR(mess(26,100,1)) From GESECRAN : Break
+    Endif
+    nolign += 1
+    [M:YITMF] = [F:YITMD]
+  Next
+  [M:YITMF]NBLAN = nolign
+  If [M:YITMF]NBLAN=0
+    Effzo [M:YITMF]
+    Grizo [M:YITMF]10
+  Else
+    Actzo [M:YITMF]10
+    If dim(NOL)<1
+      Local Integer NOL
+    Endif
+    NOL = find(GLANGUE, [M:YITMF]LAN(0..[M:YITMF]NBLAN-1))
+    If NOL<>0 : NOL -= 1 : Endif
+    Gosub LOAD_DES From SPEYITMF
+  Endif
+Return
+
+#------------------------------------------------------------------------------#
+
+$CREATION_YITMD
+  For I=0 To [M:YITMF]NBLAN-1
+    Raz [F:YITMD]
+    [F:YITMD]ITMREF = [F:ITM]ITMREF
+    [F:YITMD]LAN = [M:YITMF]LAN(I)
+    [F:YITMD]YDESCRIPTION = [M:YITMF]YDESCRIPTION(I)
+    Write [F:YITMD]
+    If fstat : GOK = 0 : Break : Endif
+  Next
+  If GOK<1 : Call FSTA("YITMD") From GLOCK : Endif
+Return
+
+#------------------------------------------------------------------------------#
+
+$ANNULE_YITMD
+  Delete [F:YITMD] Where  ITMREF=[F:ITM]ITMREF
+  If fstat=1
+    GOK = -1 : GLOCK = "$YITMDSLANDES" - [F:ITM]ITMREF
+  Endif
+Return

@@ -1,0 +1,15 @@
+#<AdxTL>@(#)0.0.0.0 $Revision$
+
+Funprog GET_FUNCION(WSIVTYP)
+Value Char WSIVTYP
+Local Char FUNCION(3)
+
+  Raz FUNCION
+  Case WSIVTYP
+    When "FAC"   : FUNCION = "380"
+    When "PRF"   : FUNCION = "325"
+    When "ABC"   : FUNCION = "381"
+    When "FRC"   : FUNCION = "384"
+    When Default : FUNCION = "380"
+  Endcase
+End FUNCION

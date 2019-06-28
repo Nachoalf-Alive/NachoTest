@@ -1,0 +1,62 @@
+#<AdxTL>@(#)0.0.0.0 $Revision$
+
+$ACTION
+
+Return
+
+#------------------------------------------------------------------------------#
+
+Subprog AS_NBLAN
+  Gosub SETNOL
+  If nolign>0
+    [M:YITMF]ZNUMLIG = nolign -1
+    Gosub LOAD_DES
+  Endif
+  If nolign<1 or [M:YITMF]XLAN=""
+    Grizo [M:YITMF]10
+  Else
+    Actzo [M:YITMF]10
+  Endif
+End
+
+#------------------------------------------------------------------------------#
+
+Subprog AM_LAN(VALEUR)
+Variable Char    VALEUR()
+  Gosub SETNOL
+  If [M:YITMF]XLAN=""
+    [M:YITMF]XLAN = VALEUR : Affzo [M:YITMF]XLAN
+    Actzo [M:YITMF]10
+  Endif
+  zonsui = "[M:YITMF]XDESCRIPTION"
+End
+
+#------------------------------------------------------------------------------#
+
+Subprog APRES_NBLAN
+  nolign = [M:YITMF]NBLAN
+End
+
+#------------------------------------------------------------------------------#
+
+Subprog AM_XDESCRIPTION (VALEUR)
+Variable Char    VALEUR()
+  [M:YITMF]YDESCRIPTION([M:YITMF]ZNUMLIG) = VALEUR
+End
+
+#------------------------------------------------------------------------------#
+
+$LOAD_DES
+  [M:YITMF]XLAN = [M:YITMF]LAN(NOL)
+  [M:YITMF]XDESCRIPTION = [M:YITMF]YDESCRIPTION(NOL)
+
+  Affzo [M:YITMF]10
+Return
+
+#------------------------------------------------------------------------------#
+
+$SETNOL
+  Local Integer NOL
+  NOL = nolign -1
+Return
+

@@ -1,0 +1,9 @@
+# FAMESAOF project settings
+# The endpoint in an uri form. The scheme define the connection type# http:// for update 8.0 and greater, x3:// or none for previous versions
+uri=http://217.116.8.58:8124/FAMESAOF/FAMESAOF
+# ===================================================
+# Obsolete settings (kept for backward compatibility)
+# ===================================================
+server=217.116.8.58
+port=8124
+folder=FAMESAOF
